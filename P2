@@ -1,0 +1,118 @@
+CREATE TABLE Library_Actor
+    (Actor_Type int PRIMARY KEY,
+    Designation varchar(20)  );
+INSERT INTO Library_Actor VALUES (1, 'Librarian');
+INSERT INTO Library_Actor VALUES (2, 'Member');
+INSERT INTO Library_Actor VALUES (3, 'Author');
+INSERT INTO Library_Actor VALUES (4,'System');
+
+CREATE TABLE Library_People
+(  People_ID char(10) PRIMARY KEY,  
+   First_Name varchar(20),  
+   Last_Name varchar(20),  
+   People_Type int,
+   Birth_Date date,
+   Sex char(1),  
+   Department varchar(20),  
+   Contact_Number varchar(12), 
+   Email varchar(20) );
+ALTER TABLE Library_People
+ADD CONSTRAINT People_Type_FK FOREIGN KEY(People_Type) REFERENCES Library_Actor(Actor_Type); 
+INSERT INTO Library_People VALUES ('2016123456', 'Ahmed', 'Alsaeed',2, '20010220', 'M', 'ICS', '0563384954','ahmed.alsaeed');
+INSERT INTO Library_People VALUES ('2012612456', 'Khalid','Alghamdi',2,'19960513', 'M', 'COE', '0563311944','khalid.alghamdi');
+INSERT INTO Library_People VALUES ('1999123456', 'Nora', 'Fahd', 1, '19801221', 'F', 'LIB', '0543311944','nora.fahd');
+INSERT INTO Library_People VALUES ('2016123246', 'Ahmed', 'Ali', 2, '20020720', 'M', 'SE', '0563331944','ahmed.ali');
+INSERT INTO Library_People VALUES ('1972184246', 'Ramez', 'Elmasri', 3, '19620510', 'M', Null, Null,'ramez.elmasri');
+INSERT INTO Library_People VALUES ('1979125546', 'Mohammed', 'Rashid', 3, '19620310', 'M', Null, Null,'mohammed.rashid');
+INSERT INTO Library_People VALUES ('1976123246', 'Shamkant', 'Navathe', 3, '19561210', 'M', Null, Null, Null);
+INSERT INTO Library_People VALUES ('2099999999', 'KFUPM','Library System', 4, Null, Null, Null,'0577299993', 'system.library');
+
+CREATE TABLE Subject  
+(   Subject_Id int PRIMARY KEY,  
+    Subject_Name varchar(50)  );
+INSERT INTO Subject VALUES (101, 'Computer Science');
+INSERT INTO Subject VALUES (102, 'Database');
+INSERT INTO Subject VALUES (103, 'Data Science');
+
+CREATE TABLE Book 
+(   ISBN_Code char(10) PRIMARY KEY,  
+    Book_Title varchar(100),  
+    Book_Language varchar(20),
+    No_of_Copies int,  
+    Subject_ID int,  
+    Is_Available char,
+    Publication_Year int  );
+INSERT INTO Book VALUES ('1245677006', 'Programming Concepts', 'English', 2, 101, 'Y', 2020);
+INSERT INTO Book VALUES ('1345677006', 'Database Concepts', 'Arabic', 4, 102, 'Y', 2021);
+INSERT INTO Book VALUES ('1345677236', 'Data Science Today', 'English', 0, 103, 'N', 2021);
+ALTER TABLE Book  
+ADD CONSTRAINT Subject_ID_FK FOREIGN KEY(Subject_ID) REFERENCES Subject(Subject_ID);  
+CREATE TABLE Book_Author 
+(   ISBN_Code char(10), 
+    Author_ID char(10),
+    PRIMARY KEY (ISBN_Code, Author_ID) );
+ALTER TABLE Book_Author
+ADD CONSTRAINT Book_Author_FK FOREIGN KEY(ISBN_Code) REFERENCES Book(ISBN_Code);
+ALTER TABLE Book_Author
+ADD CONSTRAINT Book_Author_FK2 FOREIGN KEY(Author_ID) REFERENCES Library_People(People_ID);
+INSERT INTO Book_Author VALUES ('1345677006', '1972184246');
+INSERT INTO Book_Author VALUES ('1345677006', '1976123246');
+
+CREATE TABLE Book_Item
+(   Bar_Code char(12) PRIMARY KEY,  
+    ISBN_Code char(10),  
+    Book_Copy_No int,
+    Status char);
+INSERT INTO Book_Item VALUES ('988849499943', '1245677006', 1, 'N');
+INSERT INTO Book_Item VALUES ('988849299943', '1245677006', 2, 'N');
+INSERT INTO Book_Item VALUES ('988849434943', '1345677006', 1, 'N');
+INSERT INTO Book_Item VALUES ('988833499943', '1345677006', 2, 'N');
+INSERT INTO Book_Item VALUES ('988849477943', '1345677006', 3, 'N');
+ALTER TABLE Book_Item
+ADD CONSTRAINT ISBN_Code_FK FOREIGN KEY(ISBN_Code) REFERENCES Book(ISBN_Code); 
+
+CREATE TABLE Book_Loan  
+(   Borrower_ID varchar(10),  
+    Bar_Code char(12),
+    Borrowed_From date,  
+    Borrowed_To date,  
+    Actual_Return date,  
+    Issued_by varchar(10),
+    PRIMARY KEY (Borrower_ID, Bar_Code, Borrowed_From)  );
+Insert into Book_Loan VALUES('2016123456', '988849499943','20200801', '20200807', '20200808',  '1999123456');  
+Insert into Book_Loan VALUES('2016123456', '988849299943','20211002', '20211030',NULL, '1999123456');
+ALTER TABLE Book_Loan  
+ADD CONSTRAINT Borrower_ID_FK FOREIGN KEY(Borrower_Id) REFERENCES Library_People(People_Id),
+ADD CONSTRAINT Issued_FK FOREIGN KEY(Issued_By) REFERENCES Library_People(People_Id),
+ADD CONSTRAINT Book_Bar_Code_FK FOREIGN KEY(Bar_Code) REFERENCES Book_Item(Bar_Code);
+
+CREATE TABLE Book_Reserve 
+(   Borrower_ID varchar(10),  
+    ISBN_Code char(10),
+    Reserve_Date date,  
+    Status char,
+    PRIMARY KEY (Borrower_ID, ISBN_Code)  );
+ALTER TABLE Book_Reserve
+ADD CONSTRAINT Borrower_ID_FK2 FOREIGN KEY(Borrower_Id) REFERENCES Library_People(People_Id),
+ADD CONSTRAINT Book_ISBN_FK2 FOREIGN KEY(ISBN_Code) REFERENCES Book(ISBN_Code);
+Insert into Book_Reserve VALUES('2016123456','1245677006','20210801', 'N');  
+
+CREATE TABLE Book_Shelf  
+(   Shelf_ID int PRIMARY KEY,  
+    Shelf_No char(4),  
+    Floor_No int  );  
+ALTER TABLE Book_Item ADD COLUMN Shelf_ID int;  
+Insert into Book_Shelf Values(1, 'QA 1', 3);  
+Insert into Book_Shelf Values(2, 'QA 2', 4);
+UPDATE Book_Item set Shelf_ID = 1  
+where ISBN_Code Like '124%';  
+UPDATE Book_Item set Shelf_ID = 1  
+where ISBN_Code Like '134%';  
+ALTER TABLE Book_Item  
+ADD CONSTRAINT Shelf_ID_FK FOREIGN KEY(Shelf_ID) REFERENCES Book_Shelf(Shelf_ID); 
+
+CREATE TABLE Log_in
+(Username char(10) PRIMARY KEY, Pass char(60));
+ALTER TABLE Log_in
+ADD CONSTRAINT usern FOREIGN KEY(Username) REFERENCES Library_People(People_Id);
+Insert into Log_in Values(2016123456, 'admin123');
